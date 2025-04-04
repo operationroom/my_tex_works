@@ -1,20 +1,31 @@
-name: Publish
+name: Publish LaTeX PDF
 
 on:
   push:
     branches:
-      - main
+      - main  # main 브랜치에 push될 때마다 실행
+
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@main
-      - name: Compile and Deploy
-        uses: jonhue/pubtex-action@main
+      - name: 📥 Checkout repository
+        uses: actions/checkout@v3
+
+      - name: 🧰 Set up LaTeX and compile
+        uses: dante-ev/latex-action@v2
         with:
-          deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
-          files: |
-            examples/paper.tex
-            examples/slides.tex
-          handouts: |
-            examples/slides.tex
+          root_file: Theoretical_Approch_of_Artificial_Intelligence.tex
+          latexmk_use_xelatex: true  # 글꼴 문제 없게 하려면 xelatex 추천
+
+      - name: 📤 Move PDF to output folder
+        run: |
+          mkdir -p output
+          mv Theoretical_Approch_of_Artificial_Intelligence.pdf output/
+
+      - name: 🚀 Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./output
